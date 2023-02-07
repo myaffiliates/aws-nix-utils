@@ -27,7 +27,7 @@
             pkgs = pkgsForSystem system;
           in
           {
-            ssh-helpers = pkgs.ssm-helpers;
+            ssm-helpers = pkgs.ssm-helpers;
             default = pkgs.ssm-helpers;
           });
     };

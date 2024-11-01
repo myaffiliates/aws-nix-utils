@@ -3,15 +3,14 @@
 with pkgs.python3Packages;
 buildPythonApplication rec {
   pname = "efs-utils";
-  version = "1.34.5";
+  version = "2.1.0";
 
   src = fetchFromGitHub {
     owner = "aws";
     repo = "efs-utils";
     rev = "v${version}";
-    sha256 = "sha256-bhtdB3A0aK+VHTqd0UCEm4NUZ49RIUpy/KE7AYGi0cM=";
+    sha256 = "sha256-ijicIxyYAYRrE3gip3b70kJwarnr/TSpsgkHH/tvM6o=";
   };
-
   buildInputs = [ botocore mock pytest ];
 
   propagatedBuildInputs = [ pkgs.stunnel pkgs.openssl pkgs.systemd pkgs.which pkgs.nfs-utils pkgs.coreutils-full ];

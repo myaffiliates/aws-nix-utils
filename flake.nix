@@ -2,7 +2,7 @@
   description = "AWS utilities for Nix";
 
   inputs = {
-    nixpkgs.url = "nixpkgs/nixos-22.11";
+    nixpkgs.url = "nixpkgs/nixos-24.05";
   };
 
   outputs = { self, nixpkgs }:

@@ -26,6 +26,7 @@ in
       description = "Amazon EFS mount watchdog";
       before = [ "remote-fs-pre.target" ];
       after = [ "network-online.target" ];
+      requires = [ "network-online.target" ];
 
       serviceConfig = {
         Type = "simple";

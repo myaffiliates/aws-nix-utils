@@ -20,6 +20,7 @@
       overlays.default = final: prev: {
         ssm-helpers = final.callPackage ./ssm-helpers/default.nix { };
         efs-utils = final.callPackage ./efs-utils/default.nix { };
+        efs-proxy = final.callPackage ./efs-proxy/default.nix { };
       };
       packages = forAllSystems
         (system:
@@ -28,6 +29,7 @@
           in
           {
             ssm-helpers = pkgs.ssm-helpers;
+            efs-proxy = pkgs.efs-proxy;
             efs-utils = pkgs.efs-utils;
             default = pkgs.ssm-helpers;
           });

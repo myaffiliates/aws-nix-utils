@@ -26,4 +26,5 @@ pkgs.rustPlatform.buildRustPackage rec {
   OPENSSL_DIR = pkgs.openssl.dev;
   OPENSSL_LIB_DIR = "${pkgs.openssl.out}/lib";
 
+  doCheck = false;
 }

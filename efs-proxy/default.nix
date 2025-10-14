@@ -1,6 +1,6 @@
 { lib, stdenv, pkgs, fetchFromGitHub }:
-let 
-  manifest = (pkgs.lib.importTOML ./proxy/Cargo.toml).package;
+let
+  manifest = (pkgs.lib.importTOML ./src/proxy/Cargo.toml).package;
 in
 
 pkgs.rustPlatform.buildRustPackage rec {
@@ -12,5 +12,5 @@ pkgs.rustPlatform.buildRustPackage rec {
     rev = "v${version}";
     sha256 = "sha256-OIf5GZt8pVPQDQ89mFa1e165e65N1X307D9HQ23fASQ=";
   };
-  cargoLock.lockFile = ./proxy/Cargo.lock;
+  cargoLock.lockFile = ./src/proxy/Cargo.lock;
 }

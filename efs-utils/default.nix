@@ -19,8 +19,8 @@ buildPythonApplication rec {
   format = "other";
 
   patchPhase = ''
-    sed -i -e 's|"/sbin:/usr/sbin:/usr/local/sbin:/root/bin:/usr/local/bin:/usr/bin:/bin"|"${lib.makeBinPath propagatedBuildInputs}"|; s|/sbin/mount|${pkgs.nfs-utils}/bin/mount|; s|/var/run/|/run/|' src/mount_efs/__init__.py
-    sed -i -e 's|"/sbin:/usr/sbin:/usr/local/sbin:/root/bin:/usr/local/bin:/usr/bin:/bin"|"${lib.makeBinPath propagatedBuildInputs}"|; s|/sbin/mount|${pkgs.nfs-utils}/bin/mount|; s|/var/run/|/run/|' src/watchdog/__init__.py
+    sed -i -e 's|"/usr/sbin:/usr/local/sbin:/root/bin:/usr/local/bin:/usr/bin:/bin"|"${lib.makeBinPath propagatedBuildInputs}"|; s|/sbin/mount|${pkgs.nfs-utils}/bin/mount|; s|/var/run/|/run/|' src/mount_efs/__init__.py
+    sed -i -e 's|"/usr/sbin:/usr/local/sbin:/root/bin:/usr/local/bin:/usr/bin:/bin"|"${lib.makeBinPath propagatedBuildInputs}"|; s|/sbin/mount|${pkgs.nfs-utils}/bin/mount|; s|/var/run/|/run/|' src/watchdog/__init__.py
   '';
   buildPhase = "";
 

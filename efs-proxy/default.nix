@@ -1,4 +1,4 @@
-{ lib, stdenv, pkgs, fetchFromGitHub }:
+{ lib, stdenv, pkgs, pkg-config, fetchFromGitHub }:
 
 let
   efs-utils_src = fetchFromGitHub {

@@ -14,5 +14,16 @@ pkgs.rustPlatform.buildRustPackage rec {
   version = "2.3.3";
   src = efs-utils_src + "/src/proxy";
   cargoLock.lockFile = src + "/Cargo.lock";
-  nativeBuildInputs = [ pkgs.pkg-config pkgs.openssl.dev pkgs.libssh.dev ];
+
+  nativeBuildInputs = [
+    pkgs.pkg-config
+  ];
+
+  buildInputs = [
+    pkgs.openssl
+  ];
+
+  OPENSSL_DIR = pkgs.openssl.dev;
+  OPENSSL_LIB_DIR = "${pkgs.openssl.out}/lib";
+
 }

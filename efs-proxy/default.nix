@@ -1,11 +1,8 @@
 { lib, stdenv, pkgs, fetchFromGitHub }:
-let
-  manifest = (pkgs.lib.importTOML ${src}/src/proxy/Cargo.toml).package;
-in
 
 pkgs.rustPlatform.buildRustPackage rec {
-  pname = manifest.name;
-  version = manifest.version;
+  pname = "efs-proxy";
+  version = "2.3.3";
   src = fetchFromGitHub {
     owner = "aws";
     repo = "efs-utils";

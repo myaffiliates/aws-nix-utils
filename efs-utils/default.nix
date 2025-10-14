@@ -3,13 +3,13 @@
 with pkgs.python3Packages;
 buildPythonApplication rec {
   pname = "efs-utils";
-  version = "2.1.0";
+  version = "2.3.3";
 
   src = fetchFromGitHub {
     owner = "aws";
     repo = "efs-utils";
     rev = "v${version}";
-    sha256 = "sha256-ijicIxyYAYRrE3gip3b70kJwarnr/TSpsgkHH/tvM6o=";
+    sha256 = "sha256-OIf5GZt8pVPQDQ89mFa1e165e65N1X307D9HQ23fASQ=";
   };
   buildInputs = [ botocore mock pytest ];
 

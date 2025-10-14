@@ -11,9 +11,10 @@ buildPythonApplication rec {
     rev = "v${version}";
     sha256 = "sha256-OIf5GZt8pVPQDQ89mFa1e165e65N1X307D9HQ23fASQ=";
   };
+  
   buildInputs = [ botocore mock pytest ];
 
-  propagatedBuildInputs = [ pkgs.stunnel pkgs.openssl pkgs.systemd pkgs.which pkgs.nfs-utils pkgs.coreutils-full ];
+  propagatedBuildInputs = [ pkgs.stunnel pkgs.openssl pkgs.systemd pkgs.which pkgs.nfs-utils pkgs.coreutils-full pkgs.efs-proxy ];
 
   format = "other";
 

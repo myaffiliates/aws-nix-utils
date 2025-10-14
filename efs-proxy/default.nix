@@ -14,5 +14,5 @@ pkgs.rustPlatform.buildRustPackage rec {
   pname = "efs-proxy";
   version = "2.3.3";
   src = src_folder;
-  cargoLock.lockFile = "./Cargo.lock";
+  cargoLock.lockFile = "./src/proxy/Cargo.lock";
 }

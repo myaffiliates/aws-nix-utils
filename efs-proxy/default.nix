@@ -29,8 +29,18 @@ pkgs.rustPlatform.buildRustPackage (rec {
   OPENSSL_DIR = pkgs.openssl.dev;
   OPENSSL_LIB_DIR = "${pkgs.openssl.out}/lib";
 
-  # Work around assembly generation issues in aws-lc-fips-sys on x86_64
-  AWS_LC_FIPS_SYS_PREBUILT_NASM = if stdenv.hostPlatform.isx86_64 then "1" else null;
+  # Work around aws-lc-fips-sys build issues on x86_64
+  NIX_CFLAGS_COMPILE = if stdenv.hostPlatform.isx86_64 then 
+    "-Wno-error=array-bounds -Wno-error=stringop-overflow -Wno-error -Wno-array-bounds -Wno-stringop-overflow" 
+    else "";
+  
+  hardeningDisable = if stdenv.hostPlatform.isx86_64 then [ "fortify" ] else [];
+  
+  # Set CMAKE flags for aws-lc-fips-sys build
+  AWS_LC_FIPS_SYS_CMAKE_BUILDER_VERBOSE = if stdenv.hostPlatform.isx86_64 then "1" else null;
+  CFLAGS = if stdenv.hostPlatform.isx86_64 then 
+    "-Wno-error=array-bounds -Wno-error=stringop-overflow -Wno-error" 
+    else null;
 
   doCheck = false;
 })

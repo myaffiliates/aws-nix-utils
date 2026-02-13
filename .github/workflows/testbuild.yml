@@ -30,21 +30,31 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v5
-      - uses: DeterminateSystems/nix-installer-action@main
+
+      - run: rm flake.lock
+        continue-on-error: true
+        shell: bash
+        
+      - name: Setup Cachix
+        uses: cachix/cachix-action@v15
+        with:
+          name: vagrant-nixos-cache
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+      
+      - uses: DeterminateSystems/determinate-nix-action@main
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           extra-conf: |
             trusted-public-keys = vagrant-nixos-cache.cachix.org-1:/D6PTb1Gp4XYGf8dsZPt7B1FtEIUTbKm5O5IsgNbij8= cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
             substituters = https://vagrant-nixos-cache.cachix.org https://cache.nixos.org/
-      - uses: DeterminateSystems/update-flake-lock@main
-        with:
-          pr-title: "Update flake.lock"
-
-      - uses: cachix/cachix-action@v15
-        with:
-          name: vagrant-nixos-cache
-          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
       - name: build
         run: |
           nix build .
+
+      # - name: Update Flake Lock
+      #   if: ${{ matrix.platform == 'linux/arm64' }}
+      #   uses: DeterminateSystems/update-flake-lock@main      
+      #   with:
+      #     pr-title: "Update flake.lock"
+      #     pr-body: "This PR updates the flake.lock file with the latest versions of dependencies, including the updated EFS packages. This ensures that our NixOS configurations are using the most recent and secure versions of all packages."

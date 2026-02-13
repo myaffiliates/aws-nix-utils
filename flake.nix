@@ -30,6 +30,9 @@
                 + " -Wno-error=stringop-overflow -Wno-stringop-overflow"
                 + " -Wno-error=array-bounds -Wno-array-bounds"
                 + " -Wno-error";
+              CMAKE_ARGS = (old.CMAKE_ARGS or "") + " -DOPENSSL_NO_ASM=1";
+              AWS_LC_FIPS_SYS_CMAKE_ARGS = (old.AWS_LC_FIPS_SYS_CMAKE_ARGS or "")
+                + " -DOPENSSL_NO_ASM=1";
               hardeningDisable = (old.hardeningDisable or [ ]) ++ [ "fortify" ];
             })
           else 

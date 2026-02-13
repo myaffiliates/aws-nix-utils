@@ -20,7 +20,8 @@
       overlays.default = final: prev: {
         ssm-helpers = final.callPackage ./ssm-helpers/default.nix { };
         efs-utils = final.callPackage ./efs-utils/default.nix { };
-        efs-proxy = final.callPackage ./efs-proxy/default.nix { };
+        # efs-proxy = final.callPackage ./efs-proxy/default.nix { };
+        efs-proxy = (final.callPackage ./efs-proxy/default.nix { }).overrideAttrs (old: { NIX_CFLAGS_COMPILE = (old.NIX_CFLAGS_COMPILE or "") + " -Wno-error=stringop-overflow"; });
       };
       packages = forAllSystems
         (system:

@@ -29,10 +29,8 @@ pkgs.rustPlatform.buildRustPackage (rec {
   OPENSSL_DIR = pkgs.openssl.dev;
   OPENSSL_LIB_DIR = "${pkgs.openssl.out}/lib";
 
+  # Work around assembly generation issues in aws-lc-fips-sys on x86_64
+  AWS_LC_FIPS_SYS_PREBUILT_NASM = if stdenv.hostPlatform.isx86_64 then "1" else null;
+
   doCheck = false;
-} // lib.optionalAttrs stdenv.hostPlatform.isx86_64 {
-  OPENSSL_NO_ASM = "1";
-  AWS_LC_FIPS_SYS_CMAKE_BUILDER_VERBOSE = "1";
-  AWS_LC_FIPS_SYS_EXTERNAL_BINDGEN = "1";
-  AWS_LC_FIPS_SYS_PREBUILT_NASM = "1";
 })

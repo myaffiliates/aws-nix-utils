@@ -27,7 +27,9 @@
           if final.stdenv.hostPlatform.system == "x86_64-linux" then
             base.overrideAttrs (old: {
               NIX_CFLAGS_COMPILE = (old.NIX_CFLAGS_COMPILE or "")
-                + " -Wno-error=stringop-overflow -Wno-stringop-overflow";
+                + " -Wno-error=stringop-overflow -Wno-stringop-overflow"
+                + " -Wno-error=array-bounds -Wno-array-bounds"
+                + " -Wno-error";
               hardeningDisable = (old.hardeningDisable or [ ]) ++ [ "fortify" ];
             })
           else 

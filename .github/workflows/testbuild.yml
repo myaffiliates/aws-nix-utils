@@ -47,4 +47,4 @@ jobs:
 
       - name: build
         run: |
-          nix build --no-out-link . | cachix push vagrant-nixos-cache
+          nix build .

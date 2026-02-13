@@ -17,6 +17,9 @@ pkgs.rustPlatform.buildRustPackage rec {
 
   nativeBuildInputs = [
     pkgs.pkg-config
+    pkgs.go
+    pkgs.cmakeMinimal
+    pkgs.perl
   ];
 
   buildInputs = [

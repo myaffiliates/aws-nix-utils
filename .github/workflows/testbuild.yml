@@ -28,20 +28,19 @@ jobs:
           - linux/arm64
       fail-fast: false
     steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-        
-      - name: Install Nix
-        uses: cachix/install-nix-action@v31
+      - uses: actions/checkout@v5
+      - uses: cachix/install-nix-action@v31
         with:
           nix_path: nixpkgs=channel:nixos-unstable
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
           extra_nix_config: |
             trusted-public-keys = vagrant-nixos-cache.cachix.org-1:/D6PTb1Gp4XYGf8dsZPt7B1FtEIUTbKm5O5IsgNbij8= cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
             substituters = https://vagrant-nixos-cache.cachix.org https://cache.nixos.org/
+      - uses: DeterminateSystems/update-flake-lock@main
+        with:
+          pr-title: "Update flake.lock"
 
-      - name: Setup Cachix
-        uses: cachix/cachix-action@v15
+      - uses: cachix/cachix-action@v15
         with:
           name: vagrant-nixos-cache
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}

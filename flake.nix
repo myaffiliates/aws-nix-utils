@@ -20,8 +20,22 @@
       overlays.default = final: prev: {
         ssm-helpers = final.callPackage ./ssm-helpers/default.nix { };
         efs-utils = final.callPackage ./efs-utils/default.nix { };
-        # efs-proxy = final.callPackage ./efs-proxy/default.nix { };
-        efs-proxy = (final.callPackage ./efs-proxy/default.nix { }).overrideAttrs (old: { NIX_CFLAGS_COMPILE = (old.NIX_CFLAGS_COMPILE or "") + " -Wno-error=stringop-overflow"; });
+        efs-proxy =
+          let
+            base = final.callPackage ./efs-proxy/default.nix { };
+          in
+          if final.stdenv.hostPlatform.system == "x86_64-linux" then
+            base.overrideAttrs (old: {
+              NIX_CFLAGS_COMPILE = (old.NIX_CFLAGS_COMPILE or "")
+                + " -Wno-error=stringop-overflow -Wno-stringop-overflow";
+              hardeningDisable = (old.hardeningDisable or [ ]) ++ [ "fortify" ];
+            })
+          else 
+            base.overrideAttrs (old: {
+              NIX_CFLAGS_COMPILE = (old.NIX_CFLAGS_COMPILE or "")
+                + " -Wno-error=stringop-overflow";
+              hardeningDisable = (old.hardeningDisable or [ ]) ++ [ "fortify" ];
+            });
       };
       packages = forAllSystems
         (system:

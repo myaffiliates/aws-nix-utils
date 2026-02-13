@@ -35,7 +35,7 @@ jobs:
         continue-on-error: true
         shell: bash
       
-      - run: apt update && apt install -y golang-go cmake perl
+      - run: sudo apt update && sudo apt install -y golang-go cmake perl
         shell: bash 
 
       - uses: DeterminateSystems/determinate-nix-action@main

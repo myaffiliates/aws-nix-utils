@@ -21,6 +21,7 @@ pkgs.rustPlatform.buildRustPackage rec {
     pkgs.go
     pkgs.cmakeMinimal
     pkgs.perl
+    pkgs.clang
   ];
 
   buildInputs = [
@@ -33,12 +34,13 @@ pkgs.rustPlatform.buildRustPackage rec {
   # Disable hardening - aws-lc-fips-sys fails with fortify enabled
   hardeningDisable = [ "fortify" "format" ];
 
-  # Environment variables to bypass aws-lc-fips-sys FIPS module compilation
-  # These are respected by aws-lc-fips-sys build.rs
-  preBuild = ''
-    export AWS_LC_FIPS_SYS_PREBUILT_NASM=1
-    export AWS_LC_FIPS_SYS_NO_ASM=1  
-  '';
+  # Use clang instead of GCC for aws-lc-fips-sys
+  # GCC 14+ has issues with FIPS module compilation
+  # See: https://github.com/aws/aws-lc-rs/issues/569
+  CC = "${pkgs.clang}/bin/clang";
+  
+  # Tell aws-lc-fips-sys to use clang
+  AWS_LC_FIPS_SYS_CC = "${pkgs.clang}/bin/clang";
 
   # Remove FIPS feature from efs-proxy Cargo.toml
   postPatch = ''

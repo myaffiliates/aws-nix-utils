@@ -9,7 +9,7 @@ let
   };
 in
 
-pkgs.rustPlatform.buildRustPackage (rec {
+pkgs.rustPlatform.buildRustPackage rec {
   pname = "efs-proxy";
   version = "2.4.1";
   src = efs-utils_src + "/src/proxy";
@@ -23,12 +23,10 @@ pkgs.rustPlatform.buildRustPackage (rec {
   '';
   
   # Use cargoHash for x86_64 (patched), cargoLock for others
-  cargoHash = lib.mkIf stdenv.hostPlatform.isx86_64 
-    "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
-  
-  cargoLock = lib.mkIf (!stdenv.hostPlatform.isx86_64) {
-    lockFile = src + "/Cargo.lock";
-  };
+  ${if stdenv.hostPlatform.isx86_64 then "cargoHash" else "cargoLock"} = 
+    if stdenv.hostPlatform.isx86_64 
+    then "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+    else { lockFile = src + "/Cargo.lock"; };
 
   nativeBuildInputs = [
     pkgs.pkg-config
@@ -48,4 +46,4 @@ pkgs.rustPlatform.buildRustPackage (rec {
   hardeningDisable = lib.optionals stdenv.hostPlatform.isx86_64 [ "fortify" ];
 
   doCheck = false;
-})
+}

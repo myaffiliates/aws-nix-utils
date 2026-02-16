@@ -33,21 +33,18 @@ pkgs.rustPlatform.buildRustPackage rec {
   # Disable hardening - aws-lc-fips-sys fails with fortify enabled
   hardeningDisable = [ "fortify" "format" ];
 
-  # Patch aws-lc-fips-sys CMakeLists.txt to remove -Werror before cargo vendors
-  postUnpack = ''
-    echo "Patching aws-lc-fips-sys to remove -Werror..."
-    
-    # Find and patch aws-lc-fips-sys CMakeLists.txt files
-    find "$sourceRoot" -path "*/aws-lc-fips-sys-*/aws-lc/CMakeLists.txt" -type f | while read cmakelists; do
-      echo "Patching: $cmakelists"
-      sed -i 's/-Werror//g' "$cmakelists"
-    done
-    
-    # Also patch any CMakeLists.txt that might have WARNINGS_AS_ERRORS
-    find "$sourceRoot" -path "*/aws-lc-fips-sys-*/CMakeLists.txt" -type f | while read cmakelists; do
-      echo "Patching: $cmakelists"
-      sed -i 's/-Werror//g; s/WARNINGS_AS_ERRORS.*ON/WARNINGS_AS_ERRORS OFF/g' "$cmakelists"
-    done
+  # Environment variables to bypass aws-lc-fips-sys FIPS module compilation
+  # These are respected by aws-lc-fips-sys build.rs
+  preBuild = ''
+    export AWS_LC_FIPS_SYS_PREBUILT_NASM=1
+    export AWS_LC_FIPS_SYS_NO_ASM=1  
+  '';
+
+  # Remove FIPS feature from efs-proxy Cargo.toml
+  postPatch = ''
+    substituteInPlace Cargo.toml \
+      --replace 'aws-lc-rs = { version = "1.11.0", features = ["fips"] }' \
+                'aws-lc-rs = { version = "1.11.0" }'
   '';
 
   doCheck = false;

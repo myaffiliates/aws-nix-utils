@@ -14,15 +14,21 @@ pkgs.rustPlatform.buildRustPackage (rec {
   version = "2.4.1";
   src = efs-utils_src + "/src/proxy";
   
-  # Patch Cargo.toml on x86_64 to use non-FIPS aws-lc due to build issues
-  # aws-lc-fips-sys 0.13.9 fails with glibc 2.40+ / GCC 14+ 
+  # Patch Cargo.toml on x86_64 to remove FIPS feature
+  # aws-lc-fips-sys 0.13.9 fails with glibc 2.40+ / GCC 14+
   postPatch = lib.optionalString stdenv.hostPlatform.isx86_64 ''
     substituteInPlace Cargo.toml \
       --replace 'aws-lc-rs = { version = "1.11.0", features = ["fips"] }' \
                 'aws-lc-rs = { version = "1.11.0" }'
   '';
   
-  cargoLock.lockFile = src + "/Cargo.lock";
+  # Use cargoHash for x86_64 (patched), cargoLock for others
+  cargoHash = lib.optionalString stdenv.hostPlatform.isx86_64 
+    "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+  
+  cargoLock = lib.optionalAttrs (!stdenv.hostPlatform.isx86_64) {
+    lockFile = src + "/Cargo.lock";
+  };
 
   nativeBuildInputs = [
     pkgs.pkg-config

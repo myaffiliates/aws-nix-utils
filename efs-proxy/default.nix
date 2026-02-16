@@ -1,4 +1,4 @@
-{ lib, stdenv, pkgs, pkg-config, fetchFromGitHub }:
+{ lib, stdenv, pkgs, pkg-config, fetchFromGitHub, writeTextFile }:
 
 let
   efs-utils_src = fetchFromGitHub {
@@ -6,6 +6,18 @@ let
     repo = "efs-utils";
     rev = "v2.4.1";
     sha256 = "sha256-3GfrBY9h0ALwn9E2LwfxKgT8QdMoiBRGgzFZQN3ujKQ=";
+  };
+  
+  # Stub build script for aws-lc-fips-sys on x86_64
+  aws-lc-fips-sys-stub-build = writeTextFile {
+    name = "aws-lc-fips-sys-build-stub.rs";
+    text = ''
+fn main() {
+    // FIPS module build disabled on x86_64 due to glibc 2.40+ / GCC 14+ incompatibility
+    // The delocator tool fails with: ".data section found in module"
+    println!("cargo:warning=aws-lc-fips-sys: FIPS module build disabled");
+}
+    '';
   };
 in
 
@@ -30,32 +42,19 @@ pkgs.rustPlatform.buildRustPackage rec {
   OPENSSL_DIR = pkgs.openssl.dev;
   OPENSSL_LIB_DIR = "${pkgs.openssl.out}/lib";
 
-  # On x86_64, stub out the aws-lc-fips-sys build after cargo vendor
-  # aws-lc-fips-sys 0.13.9 fails with glibc 2.40+ / GCC 14+ on x86_64
+  # On x86_64: patch source BEFORE cargo vendors dependencies
+  # This ensures aws-lc-fips-sys has a stubbed build.rs in the vendor dir
   postUnpack = lib.optionalString stdenv.hostPlatform.isx86_64 ''
-    echo "=== Patching aws-lc-fips-sys build.rs to stub FIPS ==="
-    find $sourceRoot -name "aws-lc-fips-sys-*/build.rs" -type f | while read buildrs; do
-      echo "Found: $buildrs"
-      cat > "$buildrs" << 'BUILDRS'
-fn main() {
-    println!("cargo:warning=aws-lc-fips-sys FIPS build disabled on x86_64 (glibc 2.40+ incompatibility)");
+    echo "Patching aws-lc-fips-sys for x86_64"
+    if find "$sourceRoot" -path "*/aws-lc-fips-sys-*/build.rs" | grep -q .; then
+      cp ${aws-lc-fips-sys-stub-build} "$(find "$sourceRoot" -path "*/aws-lc-fips-sys-*/build.rs" | head -1)"
+    fi
     
-    // Stub out the build entirely - aws-lc-rs will build without FIPS on x86_64
-    println!("cargo:rustc-cfg=aws_lc_fips_sys_stub");
-}
-BUILDRS
-    done
-  '';
-
-  # Remove FIPS feature from efs-proxy on x86_64
-  postPatch = lib.optionalString stdenv.hostPlatform.isx86_64 ''
-    substituteInPlace Cargo.toml \
+    # Also patch Cargo.toml to remove fips feature
+    substituteInPlace $sourceRoot/Cargo.toml \
       --replace 'aws-lc-rs = { version = "1.11.0", features = ["fips"] }' \
                 'aws-lc-rs = { version = "1.11.0" }'
   '';
-
-  # Work around aws-lc-fips-sys build issues on x86_64
-  hardeningDisable = lib.optionals stdenv.hostPlatform.isx86_64 [ "fortify" ];
 
   doCheck = false;
 }

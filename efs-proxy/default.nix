@@ -33,14 +33,22 @@ pkgs.rustPlatform.buildRustPackage rec {
   # Disable hardening - aws-lc-fips-sys fails with fortify enabled
   hardeningDisable = [ "fortify" "format" ];
 
-  # Pass flags to CMake to suppress errors for aws-lc build
-  # The cmake crate respects CFLAGS/CXXFLAGS environment variables
-  CFLAGS = "-Wno-error -Wno-stringop-overflow -Wno-array-bounds";
-  CXXFLAGS = "-Wno-error -Wno-stringop-overflow -Wno-array-bounds";
-  
-  # Also try passing to CMAKE directly
-  CMAKE_C_FLAGS = "-Wno-error -Wno-stringop-overflow -Wno-array-bounds";
-  CMAKE_CXX_FLAGS = "-Wno-error -Wno-stringop-overflow -Wno-array-bounds";
+  # Patch aws-lc-fips-sys CMakeLists.txt to remove -Werror before cargo vendors
+  postUnpack = ''
+    echo "Patching aws-lc-fips-sys to remove -Werror..."
+    
+    # Find and patch aws-lc-fips-sys CMakeLists.txt files
+    find "$sourceRoot" -path "*/aws-lc-fips-sys-*/aws-lc/CMakeLists.txt" -type f | while read cmakelists; do
+      echo "Patching: $cmakelists"
+      sed -i 's/-Werror//g' "$cmakelists"
+    done
+    
+    # Also patch any CMakeLists.txt that might have WARNINGS_AS_ERRORS
+    find "$sourceRoot" -path "*/aws-lc-fips-sys-*/CMakeLists.txt" -type f | while read cmakelists; do
+      echo "Patching: $cmakelists"
+      sed -i 's/-Werror//g; s/WARNINGS_AS_ERRORS.*ON/WARNINGS_AS_ERRORS OFF/g' "$cmakelists"
+    done
+  '';
 
   doCheck = false;
 }

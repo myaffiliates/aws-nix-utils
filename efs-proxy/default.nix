@@ -12,7 +12,7 @@ in
 # aws-lc-fips-sys 0.13.9 has known build failures with modern toolchains
 # See: https://github.com/aws/aws-lc-rs/issues/569
 # Only build on platforms where it works
-# if stdenv.hostPlatform.isAarch64 then
+if stdenv.hostPlatform.isAarch64 then
   pkgs.rustPlatform.buildRustPackage rec {
     pname = "efs-proxy";
     version = "2.4.1";
@@ -23,7 +23,7 @@ in
     nativeBuildInputs = [
       pkgs.pkg-config
       pkgs.go
-      pkgs.cmakeMinimal
+      pkgs.cmake
       pkgs.perl
     ];
 
@@ -38,14 +38,14 @@ in
 
     doCheck = false;
   }
-# else
-#   # Stub package for unsupported platforms
-#   pkgs.runCommand "efs-proxy-unsupported" {} ''
-#     mkdir -p $out/bin
-#     cat > $out/bin/efs-proxy << 'EOF'
-# #!/bin/sh
-# echo "efs-proxy not available on this platform due to aws-lc-fips-sys build issues" >&2
-# exit 1
-# EOF
-#     chmod +x $out/bin/efs-proxy
-#   ''
+else
+  # Stub package for unsupported platforms
+  pkgs.runCommand "efs-proxy-unsupported" {} ''
+    mkdir -p $out/bin
+    cat > $out/bin/efs-proxy << 'EOF'
+#!/bin/sh
+echo "efs-proxy not available on this platform due to aws-lc-fips-sys build issues" >&2
+exit 1
+EOF
+    chmod +x $out/bin/efs-proxy
+  ''

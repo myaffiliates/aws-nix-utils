@@ -60,7 +60,7 @@ pkgs.rustPlatform.buildRustPackage rec {
   version = "2.4.1";
   src = patched-src;
   
-  cargoHash = "";
+  cargoHash = "sha256-2oP0rlSdzIcffl5PNuGKwr5vQLhn6IPvTTOTfw8yWdA=";
 
   nativeBuildInputs = [
     pkgs.pkg-config

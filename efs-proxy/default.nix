@@ -22,6 +22,19 @@ pkgs.rustPlatform.buildRustPackage rec {
                 'aws-lc-rs = { version = "1.11.0" }'
   '';
   
+  # After cargo vendor, patch the build script to disable assembly
+  postConfigure = lib.optionalString stdenv.hostPlatform.isx86_64 ''
+    # Prevent aws-lc-fips-sys from building by stubbing its build.rs
+    if [ -d ../efs-proxy-2.4.1-vendor/aws-lc-fips-sys-0.13.9 ]; then
+      echo "Stubbing aws-lc-fips-sys build script to prevent FIPS build"
+      cat > ../efs-proxy-2.4.1-vendor/aws-lc-fips-sys-0.13.9/build.rs << 'EOF'
+fn main() {
+    println!("cargo:warning=aws-lc-fips-sys build skipped on x86_64");
+}
+EOF
+    fi
+  '';
+  
   # Use cargoHash for x86_64 (patched), cargoLock for others
   ${if stdenv.hostPlatform.isx86_64 then "cargoHash" else "cargoLock"} = 
     if stdenv.hostPlatform.isx86_64 

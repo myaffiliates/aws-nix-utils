@@ -23,12 +23,11 @@ pkgs.rustPlatform.buildRustPackage (rec {
   '';
   
   # Use cargoHash for x86_64 (patched), cargoLock for others
-  cargoHash = lib.optionalString stdenv.hostPlatform.isx86_64 
-    "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
-  
-  cargoLock = lib.optionalAttrs (!stdenv.hostPlatform.isx86_64) {
-    lockFile = src + "/Cargo.lock";
-  };
+} // (if stdenv.hostPlatform.isx86_64 then {
+  cargoHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+} else {
+  cargoLock.lockFile = src + "/Cargo.lock";
+}) // {
 
   nativeBuildInputs = [
     pkgs.pkg-config

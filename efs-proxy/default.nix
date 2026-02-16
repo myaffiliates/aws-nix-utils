@@ -34,7 +34,7 @@ if stdenv.hostPlatform.isAarch64 then
     OPENSSL_DIR = pkgs.openssl.dev;
     OPENSSL_LIB_DIR = "${pkgs.openssl.out}/lib";
 
-    hardeningDisable = [ "fortify" ];
+    AWS_LC_FIPS_SYS_PREBUILT_NASM = if stdenv.hostPlatform.isx86_64 then "1" else null;
 
     doCheck = false;
   }

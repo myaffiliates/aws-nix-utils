@@ -14,11 +14,44 @@ let
     chmod -R +w $out
     
     # Downgrade aws-lc-rs to 1.9.0 which doesn't have aws-lc-fips-sys dependency
-    # Version 1.11.0 unconditionally depends on aws-lc-fips-sys even without fips feature
     sed -i 's/aws-lc-rs = { version = "1.11.0", features = \["fips"\] }/aws-lc-rs = "1.9.0"/g' $out/Cargo.toml
     
-    # Remove Cargo.lock so cargo will regenerate it with new aws-lc-rs version
-    rm -f $out/Cargo.lock
+    # Update Cargo.lock to change aws-lc-rs from 1.11.0 to 1.9.0
+    sed -i 's/name = "aws-lc-rs"[[:space:]]*\nversion = "1.11.0"/name = "aws-lc-rs"\nversion = "1.9.0"/g' $out/Cargo.lock
+    
+    # Remove aws-lc-fips-sys package entry from Cargo.lock
+    # This is a multi-line block, so we use awk
+    awk '
+      BEGIN { skip = 0 }
+      /^\[\[package\]\]$/ { 
+        # Start capturing the package block
+        block = $0 "\n"
+        in_package = 1
+        next
+      }
+      in_package {
+        block = block $0 "\n"
+        if (/^name = "aws-lc-fips-sys"/) {
+          skip = 1
+        }
+        if (/^$/ || /^\[\[/) {
+          # End of package block
+          if (!skip) {
+            printf "%s", block
+          }
+          skip = 0
+          in_package = 0
+          block = ""
+          if (/^\[\[/) {
+            # This is the start of next package
+            block = $0 "\n"
+            in_package = 1
+          }
+        }
+        next
+      }
+      { print }
+    ' $out/Cargo.lock > $out/Cargo.lock.tmp && mv $out/Cargo.lock.tmp $out/Cargo.lock
   '';
 in
 

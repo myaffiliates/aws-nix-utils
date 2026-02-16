@@ -30,15 +30,17 @@ pkgs.rustPlatform.buildRustPackage rec {
   OPENSSL_DIR = pkgs.openssl.dev;
   OPENSSL_LIB_DIR = "${pkgs.openssl.out}/lib";
 
-  # Disable hardening on all platforms - aws-lc-fips-sys fails with fortify
+  # Disable hardening - aws-lc-fips-sys fails with fortify enabled
   hardeningDisable = [ "fortify" "format" ];
 
-  # Suppress compilation errors from aws-lc on x86_64
-  CFLAGS = lib.optionalString stdenv.hostPlatform.isx86_64 
-    "-Wno-error=stringop-overflow -Wno-stringop-overflow -Wno-error";
-
-  CXXFLAGS = lib.optionalString stdenv.hostPlatform.isx86_64
-    "-Wno-error=stringop-overflow -Wno-stringop-overflow -Wno-error";
+  # Pass flags to CMake to suppress errors for aws-lc build
+  # The cmake crate respects CFLAGS/CXXFLAGS environment variables
+  CFLAGS = "-Wno-error -Wno-stringop-overflow -Wno-array-bounds";
+  CXXFLAGS = "-Wno-error -Wno-stringop-overflow -Wno-array-bounds";
+  
+  # Also try passing to CMAKE directly
+  CMAKE_C_FLAGS = "-Wno-error -Wno-stringop-overflow -Wno-array-bounds";
+  CMAKE_CXX_FLAGS = "-Wno-error -Wno-stringop-overflow -Wno-array-bounds";
 
   doCheck = false;
 }

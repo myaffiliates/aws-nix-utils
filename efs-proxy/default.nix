@@ -13,8 +13,9 @@ let
     cp -r ${efs-utils_src}/src/proxy $out
     chmod -R +w $out
     
-    # Remove fips feature from Cargo.toml
-    sed -i 's/aws-lc-rs = { version = "1.11.0", features = \["fips"\] }/aws-lc-rs = "1.11.0"/g' $out/Cargo.toml
+    # Downgrade aws-lc-rs to 1.9.0 which doesn't have aws-lc-fips-sys dependency
+    # Version 1.11.0 unconditionally depends on aws-lc-fips-sys even without fips feature
+    sed -i 's/aws-lc-rs = { version = "1.11.0", features = \["fips"\] }/aws-lc-rs = "1.9.0"/g' $out/Cargo.toml
   '';
 in
 
@@ -23,7 +24,7 @@ pkgs.rustPlatform.buildRustPackage rec {
   version = "2.4.1";
   src = patched-src;
   
-  cargoHash = "sha256-NNKsFcLIj6FefZBvxEvpLdK0jBknl/M7n4Y7qARhE10=";
+  cargoHash = "";
 
   nativeBuildInputs = [
     pkgs.pkg-config

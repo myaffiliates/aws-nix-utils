@@ -1,4 +1,4 @@
-{ lib, stdenv, pkgs, pkg-config, fetchFromGitHub, runCommand }:
+{ lib, stdenv, pkgs, pkg-config, fetchFromGitHub }:
 
 let
   efs-utils_src = fetchFromGitHub {
@@ -7,32 +7,14 @@ let
     rev = "v2.4.1";
     sha256 = "sha256-3GfrBY9h0ALwn9E2LwfxKgT8QdMoiBRGgzFZQN3ujKQ=";
   };
-  
-  # On x86_64, patch source to remove FIPS dependency
-  src = if stdenv.hostPlatform.isx86_64 then
-    runCommand "efs-proxy-patched" {} ''
-      cp -r ${efs-utils_src}/src/proxy $out
-      chmod -R +w $out
-      
-      # Remove FIPS feature from aws-lc-rs
-      substituteInPlace $out/Cargo.toml \
-        --replace 'aws-lc-rs = { version = "1.11.0", features = ["fips"] }' \
-                  'aws-lc-rs = { version = "1.11.0" }'
-    ''
-  else
-    efs-utils_src + "/src/proxy";
 in
 
 pkgs.rustPlatform.buildRustPackage rec {
   pname = "efs-proxy";
   version = "2.4.1";
-  inherit src;
+  src = efs-utils_src + "/src/proxy";
   
-  # Use cargoHash for x86_64 (patched), cargoLock for others
-  ${if stdenv.hostPlatform.isx86_64 then "cargoHash" else "cargoLock"} = 
-    if stdenv.hostPlatform.isx86_64 
-    then "sha256-gOJmZ0CDvdgnJxLtXyTwWm0zLEPUGgEO/8D8YPHegSw="
-    else { lockFile = src + "/Cargo.lock"; };
+  cargoLock = { lockFile = src + "/Cargo.lock"; };
 
   nativeBuildInputs = [
     pkgs.pkg-config
@@ -47,6 +29,30 @@ pkgs.rustPlatform.buildRustPackage rec {
 
   OPENSSL_DIR = pkgs.openssl.dev;
   OPENSSL_LIB_DIR = "${pkgs.openssl.out}/lib";
+
+  # On x86_64, stub out the aws-lc-fips-sys build after cargo vendor
+  # aws-lc-fips-sys 0.13.9 fails with glibc 2.40+ / GCC 14+ on x86_64
+  postUnpack = lib.optionalString stdenv.hostPlatform.isx86_64 ''
+    echo "=== Patching aws-lc-fips-sys build.rs to stub FIPS ==="
+    find $sourceRoot -name "aws-lc-fips-sys-*/build.rs" -type f | while read buildrs; do
+      echo "Found: $buildrs"
+      cat > "$buildrs" << 'BUILDRS'
+fn main() {
+    println!("cargo:warning=aws-lc-fips-sys FIPS build disabled on x86_64 (glibc 2.40+ incompatibility)");
+    
+    // Stub out the build entirely - aws-lc-rs will build without FIPS on x86_64
+    println!("cargo:rustc-cfg=aws_lc_fips_sys_stub");
+}
+BUILDRS
+    done
+  '';
+
+  # Remove FIPS feature from efs-proxy on x86_64
+  postPatch = lib.optionalString stdenv.hostPlatform.isx86_64 ''
+    substituteInPlace Cargo.toml \
+      --replace 'aws-lc-rs = { version = "1.11.0", features = ["fips"] }' \
+                'aws-lc-rs = { version = "1.11.0" }'
+  '';
 
   # Work around aws-lc-fips-sys build issues on x86_64
   hardeningDisable = lib.optionals stdenv.hostPlatform.isx86_64 [ "fortify" ];

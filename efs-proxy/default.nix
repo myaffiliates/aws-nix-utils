@@ -23,7 +23,7 @@ in
     nativeBuildInputs = [
       pkgs.pkg-config
       pkgs.go
-      pkgs.cmake
+      pkgs.cmakeMinimal
       pkgs.perl
     ];
 

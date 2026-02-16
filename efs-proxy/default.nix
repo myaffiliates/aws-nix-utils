@@ -8,7 +8,7 @@ let
     sha256 = "sha256-3GfrBY9h0ALwn9E2LwfxKgT8QdMoiBRGgzFZQN3ujKQ=";
   };
   
-  # Patch source to remove FIPS feature from aws-lc-rs
+  # Patch source to downgrade aws-lc-rs to avoid aws-lc-fips-sys
   patched-src = runCommand "efs-proxy-src-patched" {} ''
     cp -r ${efs-utils_src}/src/proxy $out
     chmod -R +w $out
@@ -16,6 +16,9 @@ let
     # Downgrade aws-lc-rs to 1.9.0 which doesn't have aws-lc-fips-sys dependency
     # Version 1.11.0 unconditionally depends on aws-lc-fips-sys even without fips feature
     sed -i 's/aws-lc-rs = { version = "1.11.0", features = \["fips"\] }/aws-lc-rs = "1.9.0"/g' $out/Cargo.toml
+    
+    # Remove Cargo.lock so cargo will regenerate it with new aws-lc-rs version
+    rm -f $out/Cargo.lock
   '';
 in
 
@@ -24,7 +27,7 @@ pkgs.rustPlatform.buildRustPackage rec {
   version = "2.4.1";
   src = patched-src;
   
-  cargoHash = "sha256-NNKsFcLIj6FefZBvxEvpLdK0jBknl/M7n4Y7qARhE10=";
+  cargoHash = "";
 
   nativeBuildInputs = [
     pkgs.pkg-config

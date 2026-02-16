@@ -25,7 +25,7 @@ pkgs.rustPlatform.buildRustPackage rec {
   # Use cargoHash for x86_64 (patched), cargoLock for others
   ${if stdenv.hostPlatform.isx86_64 then "cargoHash" else "cargoLock"} = 
     if stdenv.hostPlatform.isx86_64 
-    then "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+    then "sha256-gOJmZ0CDvdgnJxLtXyTwWm0zLEPUGgEO/8D8YPHegSw="
     else { lockFile = src + "/Cargo.lock"; };
 
   nativeBuildInputs = [

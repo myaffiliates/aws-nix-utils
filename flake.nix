@@ -2,7 +2,7 @@
   description = "AWS utilities for Nix";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
   };
 
   outputs = { self, nixpkgs }:
@@ -20,10 +20,7 @@
       overlays.default = final: prev: {
         ssm-helpers = final.callPackage ./ssm-helpers/default.nix { };
         efs-utils = final.callPackage ./efs-utils/default.nix { };
-        efs-proxy = final.callPackage ./efs-proxy/default.nix {
-          # Use clang stdenv to avoid GCC 14+ incompatibility with aws-lc-fips-sys
-          stdenv = final.llvmPackages.stdenv;
-        };
+        efs-proxy = final.callPackage ./efs-proxy/default.nix { };
       };
       packages = forAllSystems
         (system:

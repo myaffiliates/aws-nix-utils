@@ -30,15 +30,8 @@ pkgs.rustPlatform.buildRustPackage rec {
   OPENSSL_DIR = pkgs.openssl.dev;
   OPENSSL_LIB_DIR = "${pkgs.openssl.out}/lib";
 
-  # Disable hardening - aws-lc-fips-sys fails with fortify enabled
-  hardeningDisable = [ "fortify" "format" ];
-
-  # Remove FIPS feature from efs-proxy Cargo.toml
-  postPatch = ''
-    substituteInPlace Cargo.toml \
-      --replace 'aws-lc-rs = { version = "1.11.0", features = ["fips"] }' \
-                'aws-lc-rs = { version = "1.11.0" }'
-  '';
+  # Disable hardening - aws-lc-fips-sys can fail with fortify on some systems
+  hardeningDisable = [ "fortify" ];
 
   doCheck = false;
 }
